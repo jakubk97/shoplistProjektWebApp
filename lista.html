@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesListPage.css">
+</head>
+
+<div class="content">
+
+    <body onload="start()">
+        <main>
+
+            <div>
+                <input type="submit" value="Wyloguj" name="wyloguj" id="wyloguj" onclick="wyloguj()">
+            </div>
+
+            <div class="anulujDodawanieListy" id="anulujDodawanieListy">
+                <input type="submit" value="Zakończ edycję listy" name="zakonczClick" id="zakonczClick" onclick="zakonczClick()">
+            </div>
+
+            <div class="panelWlascicieli" id="panelWlascicieli">
+                <div class="listaWlascicieli">
+                    <ul id="wlasciciele"></ul>
+                </div>
+                <div class="autocomplete">
+                    <div id="dodawanieProduktu">
+                        <input id="myInputWlasciciel" type="text" name="wlasciciel" onpaste="return false" required onkeyup="stoppedTypingWlasciciel()" placeholder="Wlaściciel">
+                    </div>
+                    <input type="submit" value="Dodaj" name="dodajWlascicielaClick" id="dodajWlascicielaClick" disabled onclick="dodajWlascicielaDoListy()">
+                </div>
+            </div>
+
+            <div class="panelProduktow" id="panelProduktow">
+                <div class="listaProduktow">
+                    <ul id="produkty"></ul>
+                </div>
+                <div class="autocomplete">
+                    <div id="dodawanieProduktu">
+                        <input id="myInput" type="text" name="produkt" onpaste="return false" required onkeyup="stoppedTyping()" placeholder="Produkt">
+                        <input id="ilosc" type="number" name="ilosc" required oninput="stoppedTyping()" placeholder="Ilość">
+                    </div>
+                    <input type="submit" value="Dodaj" name="dodajClick" id="dodajClick" disabled onclick="dodajDoListy()">
+                </div>
+            </div>
+
+        </main>
+    </body>
+</div>
+
+<script>
+    var products = [];
+
+    function start() {
+        if (localStorage.getItem("lista")) {
+            odczytajListeProduktow(localStorage.getItem("lista").toString().toLowerCase());
+            try {
+                pobierzSlownikProduktow();
+            } catch (error) {}
+        } else {
+            window.close();
+        }
+    }
+
+    function odczytajListeProduktow(nazwa) {
+        const toSend = {
+            opcja: 0,
+            id: nazwa
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    tworzenieListy(nazwa, myObj);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+
+
+    function tworzenieListy(nazwa, myObj) {
+        myObj[0].produkty.forEach(produkt => {
+            dodajProduktDoWidokuIstniejacy(produkt.nazwa, produkt.ilosc);
+        });
+        myObj[0].wlasciciele.forEach(wlasciciel => {
+            dodajWlascicielaDoWidokuIstniejacy(wlasciciel.nazwa);
+        });
+
+    }
+
+    function zakonczClick() {
+        window.close();
+    }
+
+    function dodajDoListy() {
+        try {
+            dodajProduktDoWidoku();
+            dodajProduktSerwer();
+            dodajListeDoUzytwnika();
+            dodajAktualizacjeDoListy();
+        } catch (error) {
+            console.log(error)
+        }
+
+        document.getElementById('myInput').value = "";
+        document.getElementById('ilosc').value = "";
+    }
+
+    function dodajWlascicielaDoListy() {
+        try {
+            dodajWlascicielaDoWidoku();
+            dodajListeDoUzytwnikaNowy();
+            dodajAktualizacjeDoListy();
+        } catch (error) {
+            console.log(error)
+        }
+
+        document.getElementById('myInputWlasciciel').value = "";
+    }
+
+    function dodajProduktDoWidoku() {
+        var nazwa = document.getElementById("myInput").value + "." + document.getElementById("ilosc").value;
+        console.log(nazwa)
+        var Element = document.getElementById(nazwa);
+        if (!Element) {
+            var ul = document.getElementById("produkty");
+            var li = document.createElement("li");
+            li.setAttribute('id', nazwa);
+            li.setAttribute('class', 'itemNowejListy');
+            li.appendChild(document.createTextNode(document.getElementById("myInput").value + " " + document.getElementById("ilosc").value));
+
+            var div = document.createElement('div');
+            div.id = "insideListDiv" + nazwa;
+
+            var button_usunliste = document.createElement('input');
+            button_usunliste.type = "button";
+            button_usunliste.onclick = function() {
+                usunProduktWidok(nazwa);
+                usunProduktSerwer(nazwa);
+            };
+            button_usunliste.value = "Usuń";
+            button_usunliste.id = "id_button_usunliste_name.." + nazwa;
+
+            ul.appendChild(li);
+            // document.getElementById(nazwa).appendChild(checkbox);
+            document.getElementById(nazwa).appendChild(div);
+
+            document.getElementById(div.id).appendChild(button_usunliste);
+        }
+
+    }
+
+    function dodajProduktDoWidokuIstniejacy(nazwaProduktu, iloscProduktu) {
+        var nazwa = nazwaProduktu + "." + iloscProduktu;
+
+        var Element = document.getElementById(nazwa);
+        if (!Element) {
+            var ul = document.getElementById("produkty");
+            var li = document.createElement("li");
+            li.setAttribute('id', nazwa);
+            li.setAttribute('class', 'itemNowejListy');
+            li.appendChild(document.createTextNode(nazwaProduktu + " " + iloscProduktu));
+
+            var div = document.createElement('div');
+            div.id = "insideListDiv" + nazwa;
+
+            var button_usunliste = document.createElement('input');
+            button_usunliste.type = "button";
+            button_usunliste.onclick = function() {
+                usunProduktWidok(nazwa);
+                usunProduktSerwer(nazwa);
+            };
+            button_usunliste.value = "Usuń";
+            button_usunliste.id = "id_button_usunliste_name.." + nazwa;
+
+            ul.appendChild(li);
+            // document.getElementById(nazwa).appendChild(checkbox);
+            document.getElementById(nazwa).appendChild(div);
+
+            document.getElementById(div.id).appendChild(button_usunliste);
+        }
+
+    }
+
+    function dodajWlascicielaDoWidoku() {
+        var nazwa = document.getElementById("myInputWlasciciel").value;
+        console.log(nazwa)
+        var Element = document.getElementById(nazwa);
+        if (!Element) {
+            var ul = document.getElementById("wlasciciele");
+            var li = document.createElement("li");
+            li.setAttribute('id', nazwa);
+            li.setAttribute('class', 'itemNowejListyWl');
+            li.appendChild(document.createTextNode(document.getElementById("myInputWlasciciel").value));
+
+            var div = document.createElement('div');
+            div.id = "insideListDivWl" + nazwa;
+
+            var button_usunliste = document.createElement('input');
+            button_usunliste.type = "button";
+            button_usunliste.id = "id_button_usunlisteWl_name.." + nazwa;
+            button_usunliste.onclick = function() {
+                usunWlascicielaWidok(nazwa);
+                usunWlascicielaAktualizacjaDoListy(nazwa);
+            };
+            button_usunliste.value = "Usuń";
+
+
+            ul.appendChild(li);
+            // document.getElementById(nazwa).appendChild(checkbox);
+            document.getElementById(nazwa).appendChild(div);
+
+            document.getElementById(div.id).appendChild(button_usunliste);
+        }
+
+    }
+
+    function dodajWlascicielaDoWidokuIstniejacy(nazwaWlasciciela) {
+        var nazwa = nazwaWlasciciela;
+
+        var Element = document.getElementById(nazwa);
+        if (!Element) {
+            var ul = document.getElementById("wlasciciele");
+            var li = document.createElement("li");
+            li.setAttribute('id', nazwa);
+            li.setAttribute('class', 'itemNowejListyWl');
+            li.appendChild(document.createTextNode(nazwaWlasciciela));
+
+            var div = document.createElement('div');
+            div.id = "insideListDivWl" + nazwa;
+
+            var button_usunliste = document.createElement('input');
+            button_usunliste.type = "button";
+            button_usunliste.id = "id_button_usunlisteWl_name.." + nazwa;
+            button_usunliste.onclick = function() {
+                usunWlascicielaWidok(nazwa);
+                usunWlascicielaAktualizacjaDoListy(nazwa);
+            };
+            button_usunliste.value = "Usuń";
+
+
+            ul.appendChild(li);
+            // document.getElementById(nazwa).appendChild(checkbox);
+            document.getElementById(nazwa).appendChild(div);
+
+            document.getElementById(div.id).appendChild(button_usunliste);
+        }
+
+    }
+
+
+
+    // function dodajListeSerwer() {
+    //     wlasciciel = JSON.parse('{"nazwa":"' + localStorage.getItem("ID").toString().toLowerCase() + '"}');
+    //     produktyLista = [];
+    //     wlascicieleLista = [];
+    //     wlascicieleLista.push(wlasciciel);
+    //     var items = document.getElementsByClassName("itemNowejListy");
+    //     for (k = 0; k < items.length; k++) {
+    //         var found = false;
+    //         produktyLista.forEach(prod => {
+    //             if (prod.nazwa === items[k].id.split(".")[0]) {
+    //                 usunProduktWidok(items[k].id);
+    //                 found = true;
+    //             }
+    //         });
+    //         if (!found) {
+    //             produktyLista.push(JSON.parse('{"nazwa":"' + items[k].id.split(".")[0] + '","ilosc":"' + items[k].id.split(".")[1] + '"}'));
+    //         }
+    //     }
+
+    //     const toSend = {
+    //         opcja: 5,
+    //         id: localStorage.getItem("lista").toString().toLowerCase(),
+    //         wlasciciele: wlascicieleLista,
+    //         produkty: produktyLista
+    //     }
+    //     const jsonString = JSON.stringify(toSend);
+    //     var req = new XMLHttpRequest();
+    //     var listaList = [];
+    //     req.open('POST', 'listaZakupow.php', false);
+    //     req.onreadystatechange = function(aEvt) {
+    //         if (req.readyState == 4) {
+    //             if (req.status == 200) {
+    //                 console.log("Pomyślnie zapisano dane uzytkownika\n");
+    //             }
+    //         } else
+    //             console.log("Błąd podczas ładowania strony\n");
+    //     };
+    //     req.send(jsonString);
+    // }
+
+    function dodajProduktSerwer() {
+        if (!products.includes(document.getElementById("myInput").value)) {
+            products.push(document.getElementById("myInput").value);
+            produktyDoWysłania = [];
+            products.forEach(produkt => {
+                produktyDoWysłania.push(JSON.parse('{"nazwa":"' + produkt + '"}'));
+            });
+
+
+            const toSend = {
+                opcja: 6,
+                id: "listaProduktow",
+                lista: produktyDoWysłania
+            }
+            const jsonString = JSON.stringify(toSend);
+            var req = new XMLHttpRequest();
+            var listaList = [];
+            req.open('POST', 'listaZakupow.php', false);
+            req.onreadystatechange = function(aEvt) {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                        console.log("Produkt dodany do listy produktów\n");
+                    }
+                } else
+                    console.log("Błąd podczas ładowania strony\n");
+            };
+            req.send(jsonString);
+        }
+    }
+
+    function dodajAktualizacjeDoListy() {
+        const toSend = {
+            opcja: 0,
+            id: localStorage.getItem("lista").toString().toLowerCase()
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    AktualizujListeSerwer(myObj[0].wlasciciele);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function AktualizujListeSerwer(listaWlascicieli) {
+
+        wlascicieleLista = listaWlascicieli;
+        if (document.getElementById('myInputWlasciciel').value.length > 0) {
+            wlasciciel = JSON.parse('{"nazwa":"' + document.getElementById('myInputWlasciciel').value + '"}');
+            wlascicieleLista.push(wlasciciel);
+        }
+
+        produktyLista = [];
+        var items = document.getElementsByClassName("itemNowejListy");
+        for (k = 0; k < items.length; k++) {
+            var found = false;
+            produktyLista.forEach(prod => {
+                if (prod.nazwa === items[k].id.split(".")[0]) {
+                    usunProduktWidok(items[k].id);
+                    found = true;
+                }
+            });
+            if (!found) {
+                produktyLista.push(JSON.parse('{"nazwa":"' + items[k].id.split(".")[0] + '","ilosc":"' + items[k].id.split(".")[1] + '"}'));
+            }
+        }
+
+        const toSend = {
+            opcja: 5,
+            id: localStorage.getItem("lista").toString().toLowerCase(),
+            wlasciciele: wlascicieleLista,
+            produkty: produktyLista
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    console.log("Pomyślnie zapisano dane uzytkownika\n");
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function usunProduktSerwer(nazwa) {
+        wlasciciel = JSON.parse('{"nazwa":"' + localStorage.getItem("ID").toString().toLowerCase() + '"}');
+        produktyLista = [];
+        wlascicieleLista = [];
+        wlascicieleLista.push(wlasciciel);
+        var items = document.getElementsByClassName("itemNowejListy");
+        for (k = 0; k < items.length; k++) {
+            produktyLista.push(JSON.parse('{"nazwa":"' + items[k].id.split(".")[0] + '","ilosc":"' + items[k].id.split(".")[1] + '"}'));
+
+        }
+
+        const toSend = {
+            opcja: 5,
+            id: localStorage.getItem("lista").toString().toLowerCase(),
+            wlasciciele: wlascicieleLista,
+            produkty: produktyLista
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    console.log("Pomyślnie zapisano dane uzytkownika\n");
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function usunWlascicielaAktualizacjaDoListy(nazwa) {
+        const toSend = {
+            opcja: 0,
+            id: localStorage.getItem("lista").toString().toLowerCase()
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    var wlascicieleListaMojaa = [];
+                    console.log(wlascicieleListaMojaa);
+                    for (var i = 0; i < myObj[0].wlasciciele.length; i++) {
+                        if (myObj[0].wlasciciele[i].nazwa.toString() != nazwa.toString()) {
+                            wlascicieleListaMojaa.push(myObj[0].wlasciciele[i]);
+                        }
+                    }
+
+                    console.log(wlascicieleListaMojaa);
+                    AktualizujListeSerwer(wlascicieleListaMojaa);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function usunProduktWidok(nazwa) {
+        var ul = document.getElementById("produkty");
+        var item = document.getElementById(nazwa);
+        ul.removeChild(item);
+    }
+
+    function usunWlascicielaWidok(nazwa) {
+        var ul = document.getElementById("wlasciciele");
+        var item = document.getElementById(nazwa);
+        ul.removeChild(item);
+    }
+
+    function dodajListeDoUzytwnika() {
+        const toSend = {
+            opcja: 1,
+            id: localStorage.getItem("ID").toString().toLowerCase()
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    myObj[0].listy.forEach(lista => {
+                        listaList.push(lista);
+                    });
+                    var found = false;
+                    for (var i = 0; i < listaList.length; i++) {
+                        if (listaList[i].nazwa == localStorage.getItem("lista").toString().toLowerCase()) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        listaList.push(JSON.parse('{"nazwa":"' + localStorage.getItem("lista").toString().toLowerCase() + '"}'));
+                        wyslijAktualnaListeUzytkownika(listaList);
+                    }
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function dodajListeDoUzytwnikaNowy() {
+        const toSend = {
+            opcja: 1,
+            id: document.getElementById("myInputWlasciciel").value
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    console.log(myObj)
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            listaList.push(lista);
+                        });
+                    }
+                    var found = false;
+                    for (var i = 0; i < listaList.length; i++) {
+                        if (listaList[i].nazwa == localStorage.getItem("lista").toString().toLowerCase()) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        listaList.push(JSON.parse('{"nazwa":"' + localStorage.getItem("lista").toString().toLowerCase() + '"}'));
+                        wyslijAktualnaListeUzytkownika(listaList);
+                    }
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function wyslijAktualnaListeUzytkownika(listaList) {
+        const toSend = {
+            opcja: 3,
+            id: document.getElementById("myInputWlasciciel").value,
+            lista: listaList
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    console.log("Pomyślnie zapisano dane uzytkownika\n");
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function stoppedTyping() {
+        if (document.getElementById("myInput").value.length > 0 && document.getElementById("ilosc").value.length > 0) {
+            document.getElementById('dodajClick').disabled = false;
+        } else {
+            document.getElementById('dodajClick').disabled = true;
+        }
+    }
+
+    function stoppedTypingWlasciciel() {
+        if (document.getElementById("myInputWlasciciel").value.length > 0) {
+            document.getElementById('dodajWlascicielaClick').disabled = false;
+        } else {
+            document.getElementById('dodajWlascicielaClick').disabled = true;
+        }
+    }
+
+    function pobierzSlownikProduktow() {
+        const toSend = {
+            opcja: 4,
+            id: "listaProduktow"
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function(aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    products = []
+                    myObj = JSON.parse(req.responseText);
+                    myObj[0].lista.forEach(produkt => {
+                        products.push(produkt.nazwa);
+                    });
+                    autocomplete(document.getElementById("myInput"), products);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function autocomplete(inp, arr) {
+        var currentFocus;
+        inp.addEventListener("input", function(e) {
+            var a, b, i, val = this.value;
+            closeAllLists();
+            if (!val) {
+                return false;
+            }
+            currentFocus = -1;
+            a = document.createElement("DIV");
+            a.setAttribute("id", this.id + "autocomplete-list");
+            a.setAttribute("class", "autocomplete-items");
+            this.parentNode.appendChild(a);
+            for (i = 0; i < arr.length; i++) {
+                if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                    b = document.createElement("DIV");
+                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                    b.innerHTML += arr[i].substr(val.length);
+                    b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                    b.addEventListener("click", function(e) {
+                        inp.value = this.getElementsByTagName("input")[0].value;
+                        // this.wybor = this.getElementsByTagName("input")[0].value;
+                        // console.log("A: " + this.getElementsByTagName("input")[0].value);
+                        closeAllLists();
+                    });
+                    a.appendChild(b);
+                }
+            }
+        });
+
+        inp.addEventListener("keydown", function(e) {
+            var x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) {
+                currentFocus++;
+                addActive(x);
+            } else if (e.keyCode == 38) {
+                currentFocus--;
+                addActive(x);
+            } else if (e.keyCode == 13) {
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    if (x) x[currentFocus].click();
+                }
+            }
+        });
+
+        function addActive(x) {
+            if (!x) return false;
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+
+        function removeActive(x) {
+            for (var i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+            }
+        }
+
+        function closeAllLists(elmnt) {
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != inp) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        }
+        document.addEventListener("click", function(e) {
+            closeAllLists(e.target);
+        });
+    }
+
+
+    autocomplete(document.getElementById("myInput"), products);
+</script>
+
+</html>

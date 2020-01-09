@@ -1,0 +1,28 @@
+{
+    "lista": [
+        {
+            "nazwa": "banan"
+        },
+        {
+            "nazwa": "jabłko"
+        },
+        {
+            "nazwa": "awokado"
+        },
+        {
+            "nazwa": "figa"
+        },
+        {
+            "nazwa": "włoszczyzna"
+        },
+        {
+            "nazwa": "ogórek"
+        },
+        {
+            "nazwa": "pomidor"
+        },
+        {
+            "nazwa": ""
+        }
+    ]
+}

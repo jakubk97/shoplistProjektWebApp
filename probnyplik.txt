@@ -1,0 +1,12 @@
+{
+ "wlasciciele": [{
+    "nazwa": "Admin"},{
+    "nazwa": "User"
+  }],
+  "data": "22-12-2019",
+  "produkty": [
+    {"nazwa": "banan","ilosc": 5},
+     {"nazwa": "banan2","ilosc": 1},
+     {"nazwa": "banan3","ilosc": 2}
+  ]
+}
