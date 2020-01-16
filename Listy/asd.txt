@@ -1,0 +1,25 @@
+{
+    "wlasciciele": [
+        {
+            "nazwa": "wer"
+        }
+    ],
+    "produkty": [
+        {
+            "nazwa": "pomidory",
+            "ilosc": "1"
+        },
+        {
+            "nazwa": "ogórek",
+            "ilosc": "1"
+        },
+        {
+            "nazwa": "bakłażan",
+            "ilosc": "1"
+        },
+        {
+            "nazwa": "botwina",
+            "ilosc": "1"
+        }
+    ]
+}

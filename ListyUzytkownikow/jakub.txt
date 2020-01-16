@@ -1,0 +1,10 @@
+{
+    "listy": [
+        {
+            "nazwa": "Nowa lista"
+        },
+        {
+            "nazwa": "aaa"
+        }
+    ]
+}

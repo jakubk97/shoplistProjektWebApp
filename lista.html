@@ -255,48 +255,6 @@
 
     }
 
-
-
-    // function dodajListeSerwer() {
-    //     wlasciciel = JSON.parse('{"nazwa":"' + localStorage.getItem("ID").toString().toLowerCase() + '"}');
-    //     produktyLista = [];
-    //     wlascicieleLista = [];
-    //     wlascicieleLista.push(wlasciciel);
-    //     var items = document.getElementsByClassName("itemNowejListy");
-    //     for (k = 0; k < items.length; k++) {
-    //         var found = false;
-    //         produktyLista.forEach(prod => {
-    //             if (prod.nazwa === items[k].id.split(".")[0]) {
-    //                 usunProduktWidok(items[k].id);
-    //                 found = true;
-    //             }
-    //         });
-    //         if (!found) {
-    //             produktyLista.push(JSON.parse('{"nazwa":"' + items[k].id.split(".")[0] + '","ilosc":"' + items[k].id.split(".")[1] + '"}'));
-    //         }
-    //     }
-
-    //     const toSend = {
-    //         opcja: 5,
-    //         id: localStorage.getItem("lista").toString().toLowerCase(),
-    //         wlasciciele: wlascicieleLista,
-    //         produkty: produktyLista
-    //     }
-    //     const jsonString = JSON.stringify(toSend);
-    //     var req = new XMLHttpRequest();
-    //     var listaList = [];
-    //     req.open('POST', 'listaZakupow.php', false);
-    //     req.onreadystatechange = function(aEvt) {
-    //         if (req.readyState == 4) {
-    //             if (req.status == 200) {
-    //                 console.log("Pomyślnie zapisano dane uzytkownika\n");
-    //             }
-    //         } else
-    //             console.log("Błąd podczas ładowania strony\n");
-    //     };
-    //     req.send(jsonString);
-    // }
-
     function dodajProduktSerwer() {
         if (!products.includes(document.getElementById("myInput").value)) {
             products.push(document.getElementById("myInput").value);
@@ -477,9 +435,12 @@
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].listy.forEach(lista => {
-                        listaList.push(lista);
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            listaList.push(lista);
+                        });
+                    }
+
                     var found = false;
                     for (var i = 0; i < listaList.length; i++) {
                         if (listaList[i].nazwa == localStorage.getItem("lista").toString().toLowerCase()) {
@@ -585,9 +546,12 @@
                 if (req.status == 200) {
                     products = []
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].lista.forEach(produkt => {
-                        products.push(produkt.nazwa);
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].lista.forEach(produkt => {
+                            products.push(produkt.nazwa);
+                        });
+                    }
+
                     autocomplete(document.getElementById("myInput"), products);
                 }
             } else

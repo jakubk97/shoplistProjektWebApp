@@ -1,0 +1,13 @@
+{
+    "wlasciciele": [
+        {
+            "nazwa": "wer"
+        }
+    ],
+    "produkty": [
+        {
+            "nazwa": "bób",
+            "ilosc": "1"
+        }
+    ]
+}

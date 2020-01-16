@@ -210,9 +210,11 @@
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].listy.forEach(lista => {
-                        listaList.push(lista);
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            listaList.push(lista);
+                        });
+                    }
                     var found = false;
                     for (var i = 0; i < listaList.length; i++) {
                         if (listaList[i].nazwa == document.getElementById("nazwaListy").value) {
@@ -244,9 +246,11 @@
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].listy.forEach(lista => {
-                        listaList.push(lista);
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            listaList.push(lista);
+                        });
+                    }
                     var found = false;
                     for (var i = 0; i < listaList.length; i++) {
                         if (listaList[i].nazwa == document.getElementById("nazwaListy").value) {
@@ -449,11 +453,14 @@
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].listy.forEach(lista => {
-                        if (lista.nazwa.localeCompare(nazwa)) {
-                            listaList.push(lista);
-                        }
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            if (lista.nazwa.localeCompare(nazwa)) {
+                                listaList.push(lista);
+                            }
+                        });
+                    }
+
                     wyslijAktualnaListeUzytkownika(listaList);
                 }
             } else
@@ -511,9 +518,11 @@
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].listy.forEach(lista => {
-                        dodajListeDoWidoku(lista.nazwa);
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            dodajListeDoWidoku(lista.nazwa);
+                        });
+                    }
                 }
             } else
                 console.log("Błąd podczas ładowania strony\n");
@@ -616,9 +625,12 @@
                 if (req.status == 200) {
                     products = []
                     myObj = JSON.parse(req.responseText);
-                    myObj[0].lista.forEach(produkt => {
-                        products.push(produkt.nazwa);
-                    });
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].lista.forEach(produkt => {
+                            products.push(produkt.nazwa);
+                        });
+                    }
+
                     autocomplete(document.getElementById("myInput"), products);
                 }
             } else

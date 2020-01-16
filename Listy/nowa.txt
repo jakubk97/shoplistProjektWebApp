@@ -1,0 +1,13 @@
+{
+    "wlasciciele": [
+        {
+            "nazwa": "aaa"
+        }
+    ],
+    "produkty": [
+        {
+            "nazwa": "pomidor",
+            "ilosc": "1"
+        }
+    ]
+}

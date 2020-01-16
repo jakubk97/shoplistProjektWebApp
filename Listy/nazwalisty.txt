@@ -1,0 +1,13 @@
+{
+    "wlasciciele": [
+        {
+            "nazwa": "walrus33337"
+        }
+    ],
+    "produkty": [
+        {
+            "nazwa": "włoszczyzna",
+            "ilosc": "1"
+        }
+    ]
+}
