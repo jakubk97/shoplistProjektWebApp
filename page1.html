@@ -15,7 +15,7 @@
             <header>
                 <h2 id="title">Witaj w liście zakupów</h2>
             </header>
-            <main>
+            <main onclick="checkLocal()">
 
                 <div>
                     <input type="submit" value="Wyloguj" name="wyloguj" id="wyloguj" onclick="wyloguj()">
@@ -34,13 +34,17 @@
                 <div id="NowaLista" class="tabcontent">
                     <h3>Nowa lista zakupów</h3>
                     <div class="nazwaListy" id="nazwaListyPanel">
-                        <input id="nazwaListy" type="text" name="nazwaListy" required onkeyup="stoppedTypingNazwaListy()" placeholder="Nazwa nowej listy">
-                        <input type="submit" value="Dodaj" name="dodajListeClick" id="dodajListeClick" disabled onclick="dodajNazweListy()">
+                        <input id="nazwaListy" type="text" name="nazwaListy" required
+                            onkeyup="stoppedTypingNazwaListy()" placeholder="Nazwa nowej listy">
+                        <input type="submit" value="Dodaj" name="dodajListeClick" id="dodajListeClick" disabled
+                            onclick="dodajNazweListy()">
                     </div>
 
                     <div class="anulujDodawanieListy" id="anulujDodawanieListy">
-                        <input type="submit" value="Anuluj dodawanie listy" name="anulujDodawanieListy" id="anulujDodawanie" onclick="anulujDodawanieListy()">
-                        <input type="submit" value="Zakończ dodawanie listy" name="zakonczClick" id="zakonczClick" onclick="zakonczClick()">
+                        <input type="submit" value="Anuluj dodawanie listy" name="anulujDodawanieListy"
+                            id="anulujDodawanie" onclick="anulujDodawanieListy()">
+                        <input type="submit" value="Zakończ dodawanie listy" name="zakonczClick" id="zakonczClick"
+                            onclick="zakonczClick()">
                     </div>
 
                     <div class="panelProduktow" id="panelProduktow">
@@ -49,10 +53,13 @@
                         </div>
                         <div class="autocomplete">
                             <div id="dodawanieProduktu">
-                                <input id="myInput" type="text" name="produkt" onpaste="return false" required onkeyup="stoppedTyping()" placeholder="Produkt">
-                                <input id="ilosc" type="number" name="ilosc" required oninput="stoppedTyping()" placeholder="Ilość">
+                                <input id="myInput" type="text" name="produkt" onpaste="return false" required
+                                    onkeyup="stoppedTyping()" placeholder="Produkt">
+                                <input id="ilosc" type="number" name="ilosc" required oninput="stoppedTyping()"
+                                    placeholder="Ilość">
                             </div>
-                            <input type="submit" value="Dodaj" name="dodajClick" id="dodajClick" disabled onclick="dodajDoListy()">
+                            <input type="submit" value="Dodaj" name="dodajClick" id="dodajClick" disabled
+                                onclick="dodajDoListy()">
                         </div>
                     </div>
 
@@ -76,7 +83,21 @@
 <script>
     var products = [];
 
-    document.getElementById("myInput").onkeypress = function(e) {
+    function checkLocal() {
+        if (!localStorage.getItem("ID")) {
+            window.location.href = "index.html";
+        }
+    }
+
+    function pobierzDane() {
+        pobierzListeUzytkownika();
+
+        try {
+            pobierzSlownikProduktow();
+        } catch (error) { }
+    }
+
+    document.getElementById("myInput").onkeypress = function (e) {
         var chr = String.fromCharCode(e.which);
         if (".></\"".indexOf(chr) >= 0)
             return false;
@@ -98,7 +119,7 @@
 
             var button_usunliste = document.createElement('input');
             button_usunliste.type = "button";
-            button_usunliste.onclick = function() {
+            button_usunliste.onclick = function () {
                 usunProduktWidok(nazwa);
                 usunProduktSerwer(nazwa);
             };
@@ -128,7 +149,7 @@
 
         var button_usunliste = document.createElement('input');
         button_usunliste.type = "button";
-        button_usunliste.onclick = function() {
+        button_usunliste.onclick = function () {
             usunProduktWidok(nazwa);
             usunProduktSerwer(nazwa);
         };
@@ -155,7 +176,7 @@
 
         var button_pokazliste = document.createElement('input');
         button_pokazliste.type = "button";
-        button_pokazliste.onclick = function() {
+        button_pokazliste.onclick = function () {
             odczytajListe(nazwa);
         };
         button_pokazliste.value = "Pokaż listę";
@@ -163,7 +184,7 @@
 
         var button_usunliste = document.createElement('input');
         button_usunliste.type = "button";
-        button_usunliste.onclick = function() {
+        button_usunliste.onclick = function () {
             usunListe(nazwa);
         };
         button_usunliste.value = "Usuń listę";
@@ -185,7 +206,7 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -206,7 +227,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -242,7 +263,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -296,7 +317,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Pomyślnie zapisano dane uzytkownika\n");
@@ -328,7 +349,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Pomyślnie zapisano dane uzytkownika\n");
@@ -357,7 +378,7 @@
             var req = new XMLHttpRequest();
             var listaList = [];
             req.open('POST', 'listaZakupow.php', false);
-            req.onreadystatechange = function(aEvt) {
+            req.onreadystatechange = function (aEvt) {
                 if (req.readyState == 4) {
                     if (req.status == 200) {
                         console.log("Produkt dodany do listy produktów\n");
@@ -373,26 +394,6 @@
         localStorage.setItem('lista', nazwa);
         var win = window.open("lista.html", '_blank');
         win.focus();
-        // var div = document.createElement('div');
-        // div.id = "insideListDiv" + nazwa + "L";
-        // div.appendChild(document.createTextNode("Lista zakupów ''" + nazwa + "'' zawiera:"));
-        // document.getElementById(nazwa).appendChild(div);
-
-        // myObj[0].wlasciciele.forEach(wlasciciel => {
-        //     console.log(wlasciciel);
-        // });
-
-        // myObj[0].produkty.forEach(produkt => {
-        //     console.log(produkt);
-        //     dodajProduktDoWidokuGlownego(produkt.nazwa, div.id);
-        // });
-
-        // console.log(document.getElementById(nazwa));
-        // if (document.getElementById(nazwa)) {
-        //     console.log("myObj")
-        // } else {
-        //     console.log("22")
-        // }
     }
 
     function usunListe(nazwa) {
@@ -403,17 +404,89 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
                     if (myObj[0] && myObj[0].wlasciciele && myObj[0].wlasciciele.length > 1) {
-                        usunUzytkownikaZListy();
+                        usunUzytkownikaZListy(localStorage.getItem("ID").toString(), nazwa);
                     } else {
                         usunPlikListy(nazwa);
                     }
                     zapiszListyUzytwkonika(nazwa)
                     ususListeZWidoku(nazwa);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function usunUzytkownikaZListy(nazwa, nazwaListy) {
+        const toSend = {
+            opcja: 0,
+            id: nazwaListy
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function (aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    var listaWlascicieli = [];
+                    console.log(listaWlascicieli);
+                    for (var i = 0; i < myObj[0].wlasciciele.length; i++) {
+                        if (myObj[0].wlasciciele[i].nazwa.toString() != nazwa.toString()) {
+                            listaWlascicieli.push(myObj[0].wlasciciele[i]);
+                        }
+                    }
+                    AktualizujListeSerwer(listaWlascicieli);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function AktualizujListeSerwer(listaWlascicieli) {
+        wlascicieleLista = listaWlascicieli;
+        if(document.getElementById('myInputWlasciciel') !== null){
+            if (document.getElementById('myInputWlasciciel').value.length > 0) {
+            wlasciciel = JSON.parse('{"nazwa":"' + document.getElementById('myInputWlasciciel').value + '"}');
+            wlascicieleLista.push(wlasciciel);
+        }
+        }
+
+        produktyLista = [];
+        var items = document.getElementsByClassName("itemNowejListy");
+        for (k = 0; k < items.length; k++) {
+            var found = false;
+            produktyLista.forEach(prod => {
+                if (prod.nazwa === items[k].id.split(".")[0]) {
+                    usunProduktWidok(items[k].id);
+                    found = true;
+                }
+            });
+            if (!found) {
+                produktyLista.push(JSON.parse('{"nazwa":"' + items[k].id.split(".")[0] + '","ilosc":"' + items[k].id.split(".")[1] + '"}'));
+            }
+        }
+
+        const toSend = {
+            opcja: 5,
+            id: localStorage.getItem("lista").toString().toLowerCase(),
+            wlasciciele: wlascicieleLista,
+            produkty: produktyLista
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function (aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    console.log("Pomyślnie zapisano dane uzytkownika\n");
                 }
             } else
                 console.log("Błąd podczas ładowania strony\n");
@@ -429,7 +502,7 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Usunięto plik listy");
@@ -449,7 +522,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -460,7 +533,6 @@
                             }
                         });
                     }
-
                     wyslijAktualnaListeUzytkownika(listaList);
                 }
             } else
@@ -479,7 +551,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Pomyślnie zapisano dane uzytkownika\n");
@@ -514,7 +586,7 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -604,10 +676,10 @@
         }
         try {
             pobierzListeUzytkownika();
-        } catch (error) {}
+        } catch (error) { }
         try {
             pobierzSlownikProduktow();
-        } catch (error) {}
+        } catch (error) { }
         document.getElementById('listy_moje').click();
 
     }
@@ -620,17 +692,16 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     products = []
                     myObj = JSON.parse(req.responseText);
-                    if (myObj[0] != null && myObj[0].listy != null) {
+                    if (myObj[0] != null && myObj[0].lista != null) {
                         myObj[0].lista.forEach(produkt => {
                             products.push(produkt.nazwa);
                         });
                     }
-
                     autocomplete(document.getElementById("myInput"), products);
                 }
             } else
@@ -641,6 +712,7 @@
 
 
     function openTab(evt, TabName) {
+        checkLocal();
         if (TabName == "NowaLista") {
             pobierzSlownikProduktow();
         } else if (TabName == "ListyMoje") {
@@ -659,38 +731,9 @@
         evt.currentTarget.className += " active";
     }
 
-
-    // function zapisz(data) {
-    //     if (data.name == "kolor") {
-    //         this.kolor = data.value;
-    //         zakonczKolor();
-    //     } else if (data.name == "data") {
-    //         this.data = data.value;
-    //         zakonczData();
-    //     } else if (data.name == "wzor") {
-    //         if (data.value == "jeden") {
-    //             this.wzor = "a^2+b^2=c^2";
-    //         } else if (data.value == "dwa") {
-    //             this.wzor = "lim x^2=1";
-    //         } else if (data.value == "trzy") {
-    //             this.wzor = "e^2=7";
-    //         }
-    //         zakonczWzor();
-    //     } else if (data.name == "wyborClick") {
-    //         this.wybor = document.getElementById("myInput").value;
-    //         zakonczWybor();
-    //     }
-    //     if (this.wzor != "" && this.wybor != "" && this.data != "" && this.kolor != "") {
-    //         document.getElementById("zakoncz").style.display = "block";
-    //     } else {
-    //         document.getElementById("zakoncz").style.display = "none";
-    //     }
-
-    // }
-
     function autocomplete(inp, arr) {
         var currentFocus;
-        inp.addEventListener("input", function(e) {
+        inp.addEventListener("input", function (e) {
             var a, b, i, val = this.value;
             closeAllLists();
             if (!val) {
@@ -707,7 +750,7 @@
                     b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
                     b.innerHTML += arr[i].substr(val.length);
                     b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                    b.addEventListener("click", function(e) {
+                    b.addEventListener("click", function (e) {
                         inp.value = this.getElementsByTagName("input")[0].value;
                         // this.wybor = this.getElementsByTagName("input")[0].value;
                         // console.log("A: " + this.getElementsByTagName("input")[0].value);
@@ -718,7 +761,7 @@
             }
         });
 
-        inp.addEventListener("keydown", function(e) {
+        inp.addEventListener("keydown", function (e) {
             var x = document.getElementById(this.id + "autocomplete-list");
             if (x) x = x.getElementsByTagName("div");
             if (e.keyCode == 40) {
@@ -757,7 +800,7 @@
                 }
             }
         }
-        document.addEventListener("click", function(e) {
+        document.addEventListener("click", function (e) {
             closeAllLists(e.target);
         });
     }
@@ -767,6 +810,7 @@
         location.reload();
     }
 
+    setInterval(pobierzDane, 10000);
 
     autocomplete(document.getElementById("myInput"), products);
 </script>

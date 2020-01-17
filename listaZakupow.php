@@ -115,6 +115,9 @@ function zapiszListyProduktow($daneJSON)
 		$post_data = array('lista' => $daneJSON['lista']);
 		file_put_contents("Produkty/$id.txt",json_encode($post_data, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES));
 		return array('rez' => true, 'kod' => 101, 'bo' => 'ok');
+
+		// $plik=json_decode(file_get_contents("Produkty/$id.txt"),true);
+		// return array($plik);
 	}
 	else
 	{
@@ -166,11 +169,7 @@ function pobierzUzytkownika( $daneJSON )
 	}
 	else
 	{
-		fopen("ListyUzytkownikow/$id.txt", "w");
-		$post_data = array('listy' => '');
-		file_put_contents("ListyUzytkownikow/$id.txt",json_encode($post_data, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES));
-		$plik=json_decode(file_get_contents("ListyUzytkownikow/$id.txt"),true);
-		return array($plik);
+		return array('rez'=>false, 'kod'=>5, 'bo'=>'Brak danych dla podanego użytkownika');
 	}
 }
 

@@ -10,14 +10,15 @@
 <div class="content">
 
     <body onload="start()">
-        <main>
+        <main onclick="checkLocal()">
 
             <div>
                 <input type="submit" value="Wyloguj" name="wyloguj" id="wyloguj" onclick="wyloguj()">
             </div>
 
             <div class="anulujDodawanieListy" id="anulujDodawanieListy">
-                <input type="submit" value="Zakończ edycję listy" name="zakonczClick" id="zakonczClick" onclick="zakonczClick()">
+                <input type="submit" value="Zakończ edycję listy" name="zakonczClick" id="zakonczClick"
+                    onclick="zakonczClick()">
             </div>
 
             <div class="panelWlascicieli" id="panelWlascicieli">
@@ -26,9 +27,11 @@
                 </div>
                 <div class="autocomplete">
                     <div id="dodawanieProduktu">
-                        <input id="myInputWlasciciel" type="text" name="wlasciciel" onpaste="return false" required onkeyup="stoppedTypingWlasciciel()" placeholder="Wlaściciel">
+                        <input id="myInputWlasciciel" type="text" name="wlasciciel" onpaste="return false" required
+                            onkeyup="stoppedTypingWlasciciel()" placeholder="Wlaściciel">
                     </div>
-                    <input type="submit" value="Dodaj" name="dodajWlascicielaClick" id="dodajWlascicielaClick" disabled onclick="dodajWlascicielaDoListy()">
+                    <input type="submit" value="Dodaj" name="dodajWlascicielaClick" id="dodajWlascicielaClick" disabled
+                        onclick="dodajWlascicielaDoListy()">
                 </div>
             </div>
 
@@ -38,10 +41,13 @@
                 </div>
                 <div class="autocomplete">
                     <div id="dodawanieProduktu">
-                        <input id="myInput" type="text" name="produkt" onpaste="return false" required onkeyup="stoppedTyping()" placeholder="Produkt">
-                        <input id="ilosc" type="number" name="ilosc" required oninput="stoppedTyping()" placeholder="Ilość">
+                        <input id="myInput" type="text" name="produkt" onpaste="return false" required
+                            onkeyup="stoppedTyping()" placeholder="Produkt">
+                        <input id="ilosc" type="number" name="ilosc" required oninput="stoppedTyping()"
+                            placeholder="Ilość">
                     </div>
-                    <input type="submit" value="Dodaj" name="dodajClick" id="dodajClick" disabled onclick="dodajDoListy()">
+                    <input type="submit" value="Dodaj" name="dodajClick" id="dodajClick" disabled
+                        onclick="dodajDoListy()">
                 </div>
             </div>
 
@@ -50,18 +56,48 @@
 </div>
 
 <script>
+
     var products = [];
 
+
+
+    function checkLocal() {
+        if (!localStorage.getItem("ID")) {
+            window.location.href = "index.html";
+        }
+    }
+
     function start() {
+        checkLocal();
         if (localStorage.getItem("lista")) {
             odczytajListeProduktow(localStorage.getItem("lista").toString().toLowerCase());
             try {
                 pobierzSlownikProduktow();
-            } catch (error) {}
+            } catch (error) { }
         } else {
             window.close();
         }
     }
+
+    function pobierzDane() {
+        if (document.getElementById('myInputWlasciciel').value.length == 0) {
+            var ul = document.getElementById("wlasciciele");
+            while (ul.firstChild) ul.removeChild(ul.firstChild);
+            odczytajWlascicieli(localStorage.getItem("lista").toString().toLowerCase());
+        }
+
+        if (document.getElementById("myInput").value.length == 0 && document.getElementById("ilosc").value.length == 0) {
+            var ul = document.getElementById("produkty");
+            while (ul.firstChild) ul.removeChild(ul.firstChild);
+            odczytajProdukty(localStorage.getItem("lista").toString().toLowerCase());
+        }
+
+        try {
+            pobierzSlownikProduktow();
+        } catch (error) { }
+    }
+
+    setInterval(pobierzDane, 10000);
 
     function odczytajListeProduktow(nazwa) {
         const toSend = {
@@ -71,11 +107,52 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
                     tworzenieListy(nazwa, myObj);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+
+    function odczytajWlascicieli(nazwa) {
+        const toSend = {
+            opcja: 0,
+            id: nazwa
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function (aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    tworzenieListyWlascicieli(nazwa, myObj);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
+    }
+
+    function odczytajProdukty(nazwa) {
+        const toSend = {
+            opcja: 0,
+            id: nazwa
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function (aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    tworzenieListyProduktow(nazwa, myObj);
                 }
             } else
                 console.log("Błąd podczas ładowania strony\n");
@@ -93,6 +170,19 @@
             dodajWlascicielaDoWidokuIstniejacy(wlasciciel.nazwa);
         });
 
+    }
+
+    function tworzenieListyWlascicieli(nazwa, myObj) {
+        myObj[0].wlasciciele.forEach(wlasciciel => {
+            dodajWlascicielaDoWidokuIstniejacy(wlasciciel.nazwa);
+        });
+
+    }
+
+    function tworzenieListyProduktow(nazwa, myObj) {
+        myObj[0].produkty.forEach(produkt => {
+            dodajProduktDoWidokuIstniejacy(produkt.nazwa, produkt.ilosc);
+        });
     }
 
     function zakonczClick() {
@@ -141,7 +231,7 @@
 
             var button_usunliste = document.createElement('input');
             button_usunliste.type = "button";
-            button_usunliste.onclick = function() {
+            button_usunliste.onclick = function () {
                 usunProduktWidok(nazwa);
                 usunProduktSerwer(nazwa);
             };
@@ -149,7 +239,6 @@
             button_usunliste.id = "id_button_usunliste_name.." + nazwa;
 
             ul.appendChild(li);
-            // document.getElementById(nazwa).appendChild(checkbox);
             document.getElementById(nazwa).appendChild(div);
 
             document.getElementById(div.id).appendChild(button_usunliste);
@@ -173,7 +262,7 @@
 
             var button_usunliste = document.createElement('input');
             button_usunliste.type = "button";
-            button_usunliste.onclick = function() {
+            button_usunliste.onclick = function () {
                 usunProduktWidok(nazwa);
                 usunProduktSerwer(nazwa);
             };
@@ -206,9 +295,10 @@
             var button_usunliste = document.createElement('input');
             button_usunliste.type = "button";
             button_usunliste.id = "id_button_usunlisteWl_name.." + nazwa;
-            button_usunliste.onclick = function() {
+            button_usunliste.onclick = function () {
                 usunWlascicielaWidok(nazwa);
                 usunWlascicielaAktualizacjaDoListy(nazwa);
+                zapiszListyUzytwkonika(localStorage.getItem("lista"),nazwa);
             };
             button_usunliste.value = "Usuń";
 
@@ -239,20 +329,48 @@
             var button_usunliste = document.createElement('input');
             button_usunliste.type = "button";
             button_usunliste.id = "id_button_usunlisteWl_name.." + nazwa;
-            button_usunliste.onclick = function() {
+            button_usunliste.onclick = function () {
                 usunWlascicielaWidok(nazwa);
                 usunWlascicielaAktualizacjaDoListy(nazwa);
+                zapiszListyUzytwkonika(localStorage.getItem("lista"),nazwa);
             };
             button_usunliste.value = "Usuń";
 
 
             ul.appendChild(li);
-            // document.getElementById(nazwa).appendChild(checkbox);
             document.getElementById(nazwa).appendChild(div);
 
             document.getElementById(div.id).appendChild(button_usunliste);
         }
 
+    }
+    
+    function zapiszListyUzytwkonika(nazwa,nazwaUsera) {
+        const toSend = {
+            opcja: 1,
+            id: nazwaUsera
+        }
+        const jsonString = JSON.stringify(toSend);
+        var req = new XMLHttpRequest();
+        var listaList = [];
+        req.open('POST', 'listaZakupow.php', false);
+        req.onreadystatechange = function (aEvt) {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    myObj = JSON.parse(req.responseText);
+                    if (myObj[0] != null && myObj[0].listy != null) {
+                        myObj[0].listy.forEach(lista => {
+                            if (lista.nazwa.localeCompare(nazwa)) {
+                                listaList.push(lista);
+                            }
+                        });
+                    }
+                    wyslijAktualnaListeUzytkownika(listaList,nazwaUsera);
+                }
+            } else
+                console.log("Błąd podczas ładowania strony\n");
+        };
+        req.send(jsonString);
     }
 
     function dodajProduktSerwer() {
@@ -273,7 +391,7 @@
             var req = new XMLHttpRequest();
             var listaList = [];
             req.open('POST', 'listaZakupow.php', false);
-            req.onreadystatechange = function(aEvt) {
+            req.onreadystatechange = function (aEvt) {
                 if (req.readyState == 4) {
                     if (req.status == 200) {
                         console.log("Produkt dodany do listy produktów\n");
@@ -293,7 +411,7 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -338,7 +456,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Pomyślnie zapisano dane uzytkownika\n");
@@ -370,7 +488,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Pomyślnie zapisano dane uzytkownika\n");
@@ -389,7 +507,7 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -400,8 +518,6 @@
                             wlascicieleListaMojaa.push(myObj[0].wlasciciele[i]);
                         }
                     }
-
-                    console.log(wlascicieleListaMojaa);
                     AktualizujListeSerwer(wlascicieleListaMojaa);
                 }
             } else
@@ -431,16 +547,13 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
-                    if (myObj[0] != null && myObj[0].listy != null) {
-                        myObj[0].listy.forEach(lista => {
-                            listaList.push(lista);
-                        });
-                    }
-
+                    myObj[0].listy.forEach(lista => {
+                        listaList.push(lista);
+                    });
                     var found = false;
                     for (var i = 0; i < listaList.length; i++) {
                         if (listaList[i].nazwa == localStorage.getItem("lista").toString().toLowerCase()) {
@@ -450,7 +563,7 @@
                     }
                     if (!found) {
                         listaList.push(JSON.parse('{"nazwa":"' + localStorage.getItem("lista").toString().toLowerCase() + '"}'));
-                        wyslijAktualnaListeUzytkownika(listaList);
+                        wyslijAktualnaListeUzytkownika(listaList,localStorage.getItem("ID").toString().toLowerCase());
                     }
                 }
             } else
@@ -468,7 +581,7 @@
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     myObj = JSON.parse(req.responseText);
@@ -487,7 +600,7 @@
                     }
                     if (!found) {
                         listaList.push(JSON.parse('{"nazwa":"' + localStorage.getItem("lista").toString().toLowerCase() + '"}'));
-                        wyslijAktualnaListeUzytkownika(listaList);
+                        wyslijAktualnaListeUzytkownika(listaList, document.getElementById("myInputWlasciciel").value);
                     }
                 }
             } else
@@ -496,17 +609,17 @@
         req.send(jsonString);
     }
 
-    function wyslijAktualnaListeUzytkownika(listaList) {
+    function wyslijAktualnaListeUzytkownika(listaList,nazwaUsera) {
         const toSend = {
             opcja: 3,
-            id: document.getElementById("myInputWlasciciel").value,
+            id: nazwaUsera,
             lista: listaList
         }
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         var listaList = [];
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     console.log("Pomyślnie zapisano dane uzytkownika\n");
@@ -541,17 +654,14 @@
         const jsonString = JSON.stringify(toSend);
         var req = new XMLHttpRequest();
         req.open('POST', 'listaZakupow.php', false);
-        req.onreadystatechange = function(aEvt) {
+        req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     products = []
                     myObj = JSON.parse(req.responseText);
-                    if (myObj[0] != null && myObj[0].listy != null) {
-                        myObj[0].lista.forEach(produkt => {
-                            products.push(produkt.nazwa);
-                        });
-                    }
-
+                    myObj[0].lista.forEach(produkt => {
+                        products.push(produkt.nazwa);
+                    });
                     autocomplete(document.getElementById("myInput"), products);
                 }
             } else
@@ -562,7 +672,7 @@
 
     function autocomplete(inp, arr) {
         var currentFocus;
-        inp.addEventListener("input", function(e) {
+        inp.addEventListener("input", function (e) {
             var a, b, i, val = this.value;
             closeAllLists();
             if (!val) {
@@ -579,7 +689,7 @@
                     b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
                     b.innerHTML += arr[i].substr(val.length);
                     b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                    b.addEventListener("click", function(e) {
+                    b.addEventListener("click", function (e) {
                         inp.value = this.getElementsByTagName("input")[0].value;
                         // this.wybor = this.getElementsByTagName("input")[0].value;
                         // console.log("A: " + this.getElementsByTagName("input")[0].value);
@@ -590,7 +700,7 @@
             }
         });
 
-        inp.addEventListener("keydown", function(e) {
+        inp.addEventListener("keydown", function (e) {
             var x = document.getElementById(this.id + "autocomplete-list");
             if (x) x = x.getElementsByTagName("div");
             if (e.keyCode == 40) {
@@ -629,7 +739,7 @@
                 }
             }
         }
-        document.addEventListener("click", function(e) {
+        document.addEventListener("click", function (e) {
             closeAllLists(e.target);
         });
     }

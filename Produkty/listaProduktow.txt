@@ -1,7 +1,10 @@
 {
     "lista": [
         {
-            "nazwa": "pomidor"
+            "nazwa": "pomidory"
+        },
+        {
+            "nazwa": "Śmietaną"
         }
     ]
 }

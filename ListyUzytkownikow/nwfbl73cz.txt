@@ -1,7 +1,7 @@
 {
     "listy": [
         {
-            "nazwa": "nowa lista"
+            "nazwa": "Fghj"
         }
     ]
 }
